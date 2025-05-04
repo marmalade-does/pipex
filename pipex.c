@@ -1,30 +1,6 @@
 
 #include "pipex.h"
 
-// main.c
-// -- check input
-// -- check for here_doc (remember the outfile needs to be different)
-// -- if not -- do regular file moving around
-// -- while loop for child processes
-// -- final output redirection to outfile
-
-// child_process
-// -- create pipe, fork
-// -- chid of fork to call ft_execute
-// -- parent to wait and dup2(fd[0], STDOUT_FILE)
-
-// ft_excute
-// int execve(char *path, char **args, char **env);
-// -- find the path of the thing that you need to excute (use a ft_split function here)
-// -- -- need to check acss of each of the paths
-// -- pass it all to the execve function 
-
-// main 
-// here_doc
-// get_next_line
-// ft_child
-// ft_execure
-
 int main(int argc, char **argv, char **envp)
 {
     size_t i;
@@ -40,7 +16,7 @@ int main(int argc, char **argv, char **envp)
         i = 3;
         if ((outfile = open(argv[argc - 1], O_WRONLY | O_APPEND | O_CREAT, 0777)) == -1) // some thigns aren't right here wth infile vvs outfile graaaaaaaa
             ft_error("failed to open");
-        ft_here_doc(argv[2], argc); // doesn't do the here file crap, just directly passes it to the intermediate executions? 
+        ft_here_doc(argv[2]); // doesn't do the here file crap, just directly passes it to the intermediate executions? 
     }
     else
     {
@@ -62,30 +38,69 @@ int main(int argc, char **argv, char **envp)
 }
 
 
-void ft_here_doc(char *input_name, int argc)
+void ft_here_doc(char *input_name) // I spent a bunch of time trying to do this without process management... nvm
 {
-    pid_t reader;
-    int fd[2];
-    char *line;
+	pid_t reader;
+	int fd[2];
+	char *line;
 
-    if (pipe(fd) == -1)
-        ft_error("error with pipe creation")
-    if ((reader = fork()) == -1)
-        ft_error("error with fork");
-    if (reader == 0)
-    {
-        close(fd[0]);
-
-    }
-    else
-    {
-
-    }
-
-
-
+	if (pipe(fd) == -1)
+		ft_error("error with pipe creation");
+	if ((reader = fork()) == -1)
+		ft_error("error with fork");
+	if (reader == 0)
+	{
+		close(fd[0]);
+		while (gnl_hack(&line))
+		{
+			if (ft_strncmp(line, input_name, ft_strlen(input_name)) == 0 && line[ft_strlen(input_name)] == '\n')
+			{
+				free(line);
+				break;
+			}
+			if (write(fd[1], line, ft_strlen(line)) == -1)
+				ft_error("write error");
+			free(line);
+		}
+		close(fd[1]);
+		exit(EXIT_SUCCESS);
+	}
+	else
+	{
+		close(fd[1]);
+		dup2(fd[0], STDIN_FILENO);
+		close(fd[0]);
+		wait(NULL);
+	}
 }
 
+// have to read on char at a timee, otherwise we would be using static variabeles -> rather not ( ͡° ͜ʖ ͡°) 
+int	gnl_hack(char **line)
+{
+	char	*buffer;
+	int		i;
+	int		r;
+	char	c;
+
+	i = 0;
+	r = 0;
+	buffer = (char *)malloc(0000);
+	if (!buffer)
+		return (-1);
+	r = read(0, &c, 1);
+	while (r && c != '\n' && c != '\0')
+	{
+		if (c != '\n' && c != '\0')
+			buffer[i] = c;
+		i++;
+		r = read(0, &c, 1);
+	}
+	buffer[i] = '\n';
+	buffer[++i] = '\0';
+	*line = buffer;
+	free(buffer);
+	return (r);
+}
 
 
 int ft_child(char *cmd, char **envp)
@@ -153,16 +168,3 @@ void ft_error(char *errmsg)
     perror(errmsg);
     exit(EXIT_FAILURE);
 }
-
-// what did here_doc actually do ? 
-void here_doc()
-{
-
-
-}
-
-
-
-// make utils later
-// void ft_error(char *errmsg)
-// here_doc cmd
