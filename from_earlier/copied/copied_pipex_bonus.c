@@ -12,14 +12,14 @@ void	here_doc(char *limiter, int argc);
 // checks if there is at least 5 args
 // checks if this is a here_doc assignment
 // does all the intermediate command executions (does the open std file stuff if not here_doc)
-// does the final command execution 
+// does the final command execution
 
 // -- child_process
 // creates child process to do the ft_execute command
 // make sure you get the pipes right
 
 // -- ft_execute command
-// 
+//
 
 
 /* Main function that run the childs process with the right file descriptor
@@ -47,7 +47,7 @@ int	main(int argc, char **argv, char **envp)
 		dup2(filein, STDIN_FILENO);
 	}
 	while (i < argc - 2)
-		child_process(argv[i++], envp); // you are allowed to this ugly looping over the child process because pipe(fd[2]) connections are global(!!) 
+		child_process(argv[i++], envp); // you are allowed to this ugly looping over the child process because pipe(fd[2]) connections are static global(!!)
 	dup2(fileout, STDOUT_FILENO);
 	execute(argv[argc - 2], envp);
 }
@@ -59,7 +59,7 @@ int	main(int argc, char **argv, char **envp)
  {
 	 pid_t	pid;
 	 int		fd[2];
- 
+
 	 if (pipe(fd) == -1)
 		 error();
 	 pid = fork();
@@ -78,7 +78,7 @@ int	main(int argc, char **argv, char **envp)
 		 waitpid(pid, NULL, 0);
 	 }
  }
- 
+
 /* Function who make a child process that will read from the stdin with
 get_next_line until it find the limiter word and then put the output inside a
 pipe. The main process will change his stdin for the pipe file descriptor. */
@@ -110,7 +110,7 @@ void	here_doc(char *limiter, int argc)
 		wait(NULL);
 	}
 }
- 
+
 /* Function that will read input from the terminal and return line. */
 int	get_next_line(char **line)
 {
