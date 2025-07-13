@@ -26,7 +26,7 @@ char	*get_path(char **splitted_cmd, char **envp)
 	if (paths == NULL)
 	{
 		free_dbl_ptrs(splitted_cmd, NULL);
-		ft_fail("PATH not found in environment - get_path", 1);
+		ft_fail("PATH not found in environment - get_path", 2);
 	}
 	return (ft_test_paths(splitted_cmd, paths));
 }
@@ -52,7 +52,7 @@ char	*ft_test_paths(char **splitted_cmd, char **paths)
 		if (accessible == NULL)
 		{
 			free_dbl_ptrs(splitted_cmd, back_slashed_paths, NULL);
-			ft_fail("malloc failed - ft_test_paths", 3);
+			ft_fail("malloc failed - ft_test_paths", 4);
 		}
 		if (access(accessible, X_OK) == 0)
 		{
@@ -63,7 +63,7 @@ char	*ft_test_paths(char **splitted_cmd, char **paths)
 		i++;
 	}
 	free_dbl_ptrs(back_slashed_paths, splitted_cmd, NULL);
-	ft_fail("no binaries available with that name - ft_test_paths", 6);
+	ft_fail("no binaries available with that name - ft_test_paths", 5);
 	return (NULL); // Never reached due to ft_fail exit
 }
 
