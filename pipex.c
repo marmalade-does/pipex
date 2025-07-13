@@ -23,15 +23,15 @@ int	main(int argc, char *argv[], char **envp)
 	size_t	i;
 
 	if (argc < 5)
-		ft_fail("Usage, need at least two commands: ./pipex file1 cmd1 cmd2 ... cmdn file2");
+		ft_fail("Usage, need at least two commands: ./pipex file1 cmd1 cmd2 ... cmdn file2", 99);
 	if ((ft_strncmp(argv[1], "here_doc", 8)))
 	{
 		if (argc < 6)
-			ft_fail("Usage: ./pipex here_doc LIMITER cmd1 cmd2 ... cmdn file2");
+			ft_fail("Usage: ./pipex here_doc LIMITER cmd1 cmd2 ... cmdn file2", 98);
 		i = 3;
 		outfile = open(argv[argc - 2], O_WRONLY | O_APPEND | O_CREAT);
 		if (outfile <= 0)
-			ft_fail("Error opening file - main");
+			ft_fail("Error opening file - main", 100);
 		ft_here_we_are(argv[2]); // pass the delimiter
 	}
 	else
@@ -40,16 +40,19 @@ int	main(int argc, char *argv[], char **envp)
 		infile = open(argv[2], O_RDONLY);
 		outfile = open(argv[argc - 2], O_WRONLY | O_TRUNC | O_CREAT);
 		if (infile <= 0 || outfile <= 0)
-			ft_fail("Error opening file - main");
+			ft_fail("Error opening file - main", 100);
 		if (dup2(infile, STDIN_FILENO) < 0)
-			ft_fail("Error redirecting input - main");
+			ft_fail("Error redirecting input - main", 100);
 	}
-	while(i < argc - 2) // yes because we want too NOT execute the last function
-		children(argv[i++], envp);
+	while(i < argc - 2)
+	{ // yes because we want too NOT execute the last function
+		children(argv[i], envp);
+		i++;
+	}
 	if((dup2(outfile, STDOUT_FILENO)) < 0)
-		ft_fail("Error redirecting output");
+		ft_fail("Error redirecting output", 101);
 	wrapped_execve(argv[i], envp);
-	ft_fail("Error executing command");
+	ft_fail("Error executing command", 102); // use of dup2() here is correct
 }
 void children(char *arg, char **envp)
 {
@@ -57,20 +60,21 @@ void children(char *arg, char **envp)
 	pid_t pid;
 
 	if (pipe(pip) == -1)
-		ft_fail("Error creating pipe");
+		ft_fail("Error creating pipe", 103);
 	pid = fork();
 	if (pid == -1)
-		ft_fail("Error creating fork");
+		ft_fail("Error creating fork", 104);
 	if (pid == 0)
 	{
 		close(pip[0]);
 		dup2(pip[1], STDOUT_FILENO);
 		wrapped_execve(arg, envp);
-		ft_error("execve failed -- CHILDREN");
+		ft_error("execve failed -- CHILDREN", 12);
 	}
 	else
 	{
 		close(pip[1]);
+		close(STDOUT_FILENO); // this closes the unused fd to avoid too many fd's
 		dup2(pip[0], STDIN_FILENO);
 		wait(NULL);
 		// no free needed here since the child process is the one that alocates the strs
@@ -81,25 +85,20 @@ void wrapped_execve(char *arg, char **envp)
 {
 	char	**splited;
 	char	*path;
-	size_t	i;
 
-	splited = ft_split(arg);
+	splited = ft_split(arg, ' ');
 	if (splited == NULL)
-		ft_fail("ft_split failed - wrapped execve");
-	path = get_path(splited, envp); /// check if this is NULL
-		ft_fail("get_path failed - wrapped execve"); // this isn't an if, dhuy!
-
-
-
-
-
-
+		ft_fail("ft_split failed - wrapped execve", 1);
+	path = get_path(splited, envp);
+	if (path == NULL) /// check if this is NULL
+	{
+		free_dbl_ptrs(splited, NULL, NULL);
+		ft_fail("get_path failed - wrapped execve", 1); // this isn't an if, dhuy!
+	}
 	execve(path, splited, envp);
-	while(splited[i])
-		free(splited[i++]);
-	free(splited);
+	free_dbl_ptrs(splited, NULL, NULL);
 	free(path);
-	ft_fail("execve failed");
+	ft_fail("execve failed", 25);
 }
 
 void ft_here_we_are(char *delimeter)
@@ -109,13 +108,13 @@ void ft_here_we_are(char *delimeter)
 	char	*line;
 
 	if(pipe(pip) < 0)
-		ft_fail("Error creating pipe - ft_here_doc");
+		ft_fail("Error creating pipe - ft_here_doc", 44);
 	if((pid = fork()) < 0)
-		ft_fail("Error creating fork - ft_here_doc");
+		ft_fail("Error creating fork - ft_here_doc", 44);
 	if (pid == 0)
 	{
 		close(pip[0]);
-		while(get_next_line(&line)) // don't need to worry if returns NULL becuase is dealt with in called function
+		while(pipex_rd_nxt_line(&line)) // don't need to worry if returns NULL becuase is dealt with in called function
 		{
 			if(ft_strncmp(line, delimeter, ft_strlen(delimeter)) == 0)
 				break ; // the other person used exit(EXIT_SUCCESS) -> this also works, but just in case
@@ -131,16 +130,16 @@ void ft_here_we_are(char *delimeter)
 	}
 }
 
-int get_next_line(char **line)
+int pipex_rd_nxt_line(char **line)
 {
 	int		red;
 	size_t	i;
 	char	*buf;
 	char	c;
 
-	buf = (char *)malloc(2147483647);
+	buf = (char *)malloc(9999);
 	if (buf == NULL)
-		ft_fail("malloc failed - get_next_line");  // he returns a -1 allowing the parent child process to just go till completion and end
+		ft_fail("malloc failed - pipex_rd_nxt_line", 4110);  // he returns a -1 allowing the parent child process to just go till completion and end
 	red = 1;
 	c = 0;
 	i = 0; // bruh tantas lineas :(
@@ -152,9 +151,10 @@ int get_next_line(char **line)
 		i++;
 	}
 	if (red == -1)
-		return (free(buf), ft_fail("read failed - get_next_line"), -1); // this might give erorrs later
+		return (free(buf), ft_fail("read failed - pipex_rd_nxt_line", -1), -1); // this might give erorrs later
 	buf[i - 1] = '\n';
 	buf[i] = '\0';
 	*line = buf;
 	return (red);
 }
+
