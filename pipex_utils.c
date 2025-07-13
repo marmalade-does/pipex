@@ -10,6 +10,7 @@ char	*get_path(char **splitted_cmd, char **envp)
 	paths = NULL;
 	//write(2, "checkpoint 20\n", 14); // remove later
 	// Find the single PATH variable
+	//write(2, "we are in get_path", 18);
 	while (envp[i])
 	{
 		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
@@ -17,6 +18,7 @@ char	*get_path(char **splitted_cmd, char **envp)
 			paths = ft_split(envp[i] + 5, ':');
 			if (paths == NULL)
 			{
+				write(2, "we are in paths == NULL", 23);
 				free_dbl_ptrs(splitted_cmd, NULL);
 				ft_fail("ft_split failed - get_path", 1);
 			}
@@ -27,6 +29,7 @@ char	*get_path(char **splitted_cmd, char **envp)
 	// If no PATH found, handle error
 	if (paths == NULL)
 	{
+		write(2, "we are in paths == NULL -- but after the path == NULL", 23);
 		free_dbl_ptrs(splitted_cmd, NULL);
 		ft_fail("PATH not found in environment - get_path", 2);
 	}
@@ -42,7 +45,7 @@ char	*ft_test_paths(char **splitted_cmd, char **paths)
 	i = 0;
 	back_slashed_paths = append_backslash(paths);
 	free_dbl_ptrs(paths, NULL);
-		// Free paths immediately after creating back_slashed_paths
+	// Free paths immediately after creating back_slashed_paths
 	if (back_slashed_paths == NULL)
 	{
 		free_dbl_ptrs(splitted_cmd, NULL);
@@ -58,7 +61,7 @@ char	*ft_test_paths(char **splitted_cmd, char **paths)
 		}
 		if (access(accessible, X_OK) == 0)
 		{
-			free_dbl_ptrs(splitted_cmd, back_slashed_paths, NULL);
+			free_dbl_ptrs(back_slashed_paths, NULL);
 			return (accessible);
 		}
 		free(accessible);

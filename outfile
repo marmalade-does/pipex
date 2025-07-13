@@ -1,0 +1,3 @@
+# Random Text Collection
+< infile grep "ERROR" | wc -l
+< infile grep "ERROR" | wc -l

@@ -10,7 +10,7 @@ OBJ = $(SRC:%.c=$(OBJ_DIR)/%.o)
 
 # Compiler and flags
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g -O0
+CFLAGS = -Wall -Wextra -Werror 
 # -fsanitize=address -fsanitize=leak -g
 
 # Libft configuration

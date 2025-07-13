@@ -88,7 +88,7 @@ void	children(char *arg, char **envp)
 		//write(2, "checkpoint c-8\n", 15);
 		wrapped_execve(arg, envp);
 		//write(2, "checkpoint c-9\n", 15);
-		ft_fail("execve failed -- CHILDREN", 15);
+		ft_fail("execve failed -- CHILDREN", 17);
 		//write(2, "checkpoint c-10\n", 15);
 	}
 	else
@@ -106,22 +106,6 @@ void	children(char *arg, char **envp)
 		// no free needed here since the child process is the one that alocates the strs
 	}
 }
-
-void ft_printing_splited(char **splited)
-{
-	size_t i= 0;
-	while(splited[i] != NULL)
-	{
-		//write(2, splited[i], ft_strlen(splited[i]));
-		//write(2, "\n", 1);
-		i++;
-	}
-	//write(2, "got to the end\n", 15);
-}
-
-
-
-
 
 void test_execve_args_simple(char *path, char **argv, char **envp)
 {
@@ -184,7 +168,6 @@ void	wrapped_execve(char *arg, char **envp)
 
 	splited = ft_split(arg, ' '); 
 	//write(2, "checkpoint 5\n", 13);
-	ft_printing_splited(splited);
 	if (splited == NULL)
 	{
 		//write(2, "checkpoint - entered splitted", 29); // remove
@@ -198,10 +181,10 @@ void	wrapped_execve(char *arg, char **envp)
 		free_dbl_ptrs(splited, NULL, NULL);
 		ft_fail("get_path failed - wrapped execve", 17);
 	}
-
+	// write(2, "again >:)\n", 10);
+	sleep(2);
 	test_execve_args_simple(path, splited, envp);
 	write(2, "early return\n", 13);
-	return;
 	execve(path, splited, envp);
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -291,3 +274,19 @@ int	pipex_rd_nxt_line(char **line)
 	*line = buf;
 	return (red);
 }
+
+/*
+static void ft_printing_splited(char **splited)
+{
+	size_t i= 0;
+	write(2, "\n", 1);
+	while(splited[i] != NULL)
+	{
+		write(2, splited[i], ft_strlen(splited[i]));
+		write(2, "\n", 1);
+		i++;
+	}
+	write(2, "got to the end\n", 15);
+}
+
+*/

@@ -126,7 +126,6 @@ void	wrapped_execve(char *arg, char **envp)
 
 	splited = ft_split(arg, ' '); 
 	//write(2, "checkpoint 5\n", 13);
-	ft_printing_splited(splited);
 	if (splited == NULL)
 	{
 		//write(2, "checkpoint - entered splitted", 29); // remove
