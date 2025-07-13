@@ -4,11 +4,11 @@ char	*get_path(char **splitted_cmd, char **envp)
 {
 	size_t	i;
 	char	**paths;
-	write(2, "checkpoint 20\n", 14); // remove later
+	//write(2, "checkpoint 20\n", 14); // remove later
 
 	i = 0;
 	paths = NULL;
-	write(2, "checkpoint 20\n", 14); // remove later
+	//write(2, "checkpoint 20\n", 14); // remove later
 	// Find the single PATH variable
 	while (envp[i])
 	{

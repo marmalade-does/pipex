@@ -119,64 +119,6 @@ void ft_printing_splited(char **splited)
 	//write(2, "got to the end\n", 15);
 }
 
-
-
-
-
-void test_execve_args_simple(char *path, char **argv, char **envp)
-{
-    int i;
-    
-    // Test path
-    write(2, "Path: ", 6);
-    if (path == NULL)
-        write(2, "NULL!\n", 6);
-    else {
-        write(2, path, ft_strlen(path));
-        write(2, "\n", 1);
-    }
-    
-    // Test argv
-    write(2, "Argv: ", 6);
-    if (argv == NULL)
-        write(2, "NULL!\n", 6);
-    else {
-        i = 0;
-        while (argv[i] != NULL) {
-            write(2, "[", 1);
-			write(2, argv[i], ft_strlen(argv[i]));
-            write(2, "] ", 2);
-            i++;
-        }
-        write(2, "NULL\n", 5);
-    }
-    
-    // Test envp
-    write(2, "Envp: ", 6);
-    if (envp == NULL)
-        write(2, "NULL!\n", 6);
-    else if (envp[0] == NULL)
-        write(2, "Empty\n", 6);
-    else
-        write(2, "OK\n", 3);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void	wrapped_execve(char *arg, char **envp)
 {
 	char	**splited;
@@ -194,14 +136,10 @@ void	wrapped_execve(char *arg, char **envp)
 	//write(2, "checkpoint: left get_path\n", 26);
 	if (path == NULL) /// check if this is NULL
 	{
-		//write(2, "the path variable == NULL\n", 26); // remove this later
+		write(2, "the path variable == NULL\n", 26); // remove this later
 		free_dbl_ptrs(splited, NULL, NULL);
 		ft_fail("get_path failed - wrapped execve", 17);
 	}
-
-	test_execve_args_simple(path, splited, envp);
-	write(2, "early return\n", 13);
-	return;
 	execve(path, splited, envp);
 
 	////////////////////////////////////////////////////////////////////////////////////////
@@ -214,9 +152,9 @@ void	wrapped_execve(char *arg, char **envp)
         write(2, "execve failed: Exec format error\n", 33);
     else
     {
-        write(2, "execve failed with errno: ", 26);
+        //write(2, "execve failed with errno: ", 26);
         ft_putnbr_fd(errno, 2);
-        write(2, "\n", 1);
+        //write(2, "\n", 1);
     }
     
     // Also use perror for more detail
@@ -225,7 +163,7 @@ void	wrapped_execve(char *arg, char **envp)
 
 
 
-	free_dbl_ptrs(splited, NULL, NULL); // - so the splitted is bad? 
+	//free_dbl_ptrs(splited, NULL, NULL);// - so the splitted is bad? 
 	free(path); // need to remove this later
 	ft_fail("execve failed", 18);
 }
