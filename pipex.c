@@ -72,37 +72,37 @@ void	children(char *arg, char **envp)
 	int		pip[2];
 	pid_t	pid;
 
-	write(1, "checkpoint 4\n", 13);
+	write(2, "checkpoint 4\n", 13);
 	if (pipe(pip) == -1)
 		ft_fail("Error creating pipe", 13);
 	pid = fork();
-	write(1, "checkpoint 4 - double\n", 22);
+	write(2, "checkpoint 4 - double\n", 22);
 	if (pid == -1)
 		ft_fail("Error creating fork", 14);
 	if (pid == 0)
 	{
-		write(1, "checkpoint c-6\n", 15);
+		write(2, "checkpoint c-6\n", 15);
 		close(pip[0]);
-		write(1, "checkpoint c-7\n", 15);
+		write(2, "checkpoint c-7\n", 15);
 		dup2(pip[1], STDOUT_FILENO); // this line causes a segfault (core dumped)
-		write(1, "checkpoint c-8\n", 15);
+		write(2, "checkpoint c-8\n", 15);
 		wrapped_execve(arg, envp);
-		write(1, "checkpoint c-9\n", 15);
+		write(2, "checkpoint c-9\n", 15);
 		ft_fail("execve failed -- CHILDREN", 15);
-		write(1, "checkpoint c-10\n", 15);
+		write(2, "checkpoint c-10\n", 15);
 	}
 	else
 	{
-		write(1, "checkpoint p-6\n", 15);		
+		write(2, "checkpoint p-6\n", 15);		
 		close(pip[1]);
-		write(1, "checkpoint p-7\n", 15);
+		write(2, "checkpoint p-7\n", 15);
 		// close(STDOUT_FILENO);
-		write(1, "checkpoint p-8\n", 15);
+		write(2, "checkpoint p-8\n", 15);
 		// this closes the unused fd to avoid too many fd's
 		dup2(pip[0], STDIN_FILENO);
-		write(1, "checkpoint p-9\n", 15);
+		write(2, "checkpoint p-9\n", 15);
 		wait(NULL);
-		write(1, "checkpoint p-10\n", 16);
+		write(2, "checkpoint p-10\n", 16);
 		// no free needed here since the child process is the one that alocates the strs
 	}
 }
@@ -112,10 +112,11 @@ void ft_printing_splited(char **splited)
 	size_t i= 0;
 	while(splited[i] != NULL)
 	{
-		printf("%s\n", splited[i]);
+		write(2, splited[i], ft_strlen(splited[i]));
+		write(2, "\n", 1);
 		i++;
 	}
-	printf("\n");
+	write(2, "got to the end\n", 15);
 }
 
 void	wrapped_execve(char *arg, char **envp)
@@ -124,21 +125,46 @@ void	wrapped_execve(char *arg, char **envp)
 	char	*path;
 
 	splited = ft_split(arg, ' '); 
-	write(1, "checkpoint 5\n", 13);
+	write(2, "checkpoint 5\n", 13);
 	ft_printing_splited(splited);
 	if (splited == NULL)
+	{
+		write(2, "checkpoint - entered splitted", 29); // remove
 		ft_fail("ft_split failed - wrapped execve", 16); 
+	}
 	path = get_path(splited, envp);
+	write(2, "checkpoint: left get_path\n", 26);
 	if (path == NULL) /// check if this is NULL
 	{
-		printf("the path variable == NULL\n"); // remove this later
+		write(2, "the path variable == NULL\n", 26); // remove this later
 		free_dbl_ptrs(splited, NULL, NULL);
 		ft_fail("get_path failed - wrapped execve", 17);
 	}
 	execve(path, splited, envp);
-	printf("the execve call failed\n"); // remove this later
-	free_dbl_ptrs(splited, NULL, NULL);
-	free(path);
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	// If we get here, execve failed - check errno
+    if (errno == ENOENT)
+        write(2, "execve failed: No such file or directory\n", 41);
+    else if (errno == EACCES)
+        write(2, "execve failed: Permission denied\n", 33);
+    else if (errno == ENOEXEC)
+        write(2, "execve failed: Exec format error\n", 33);
+    else
+    {
+        write(2, "execve failed with errno: ", 26);
+        ft_putnbr_fd(errno, 2);
+        write(2, "\n", 1);
+    }
+    
+    // Also use perror for more detail
+    perror("execve");
+	// remove the above later //////////////////////////////////////////////////////////////
+
+
+
+	//free_dbl_ptrs(splited, NULL, NULL);// - so the splitted is bad? 
+	free(path); // need to remove this later
 	ft_fail("execve failed", 18);
 }
 

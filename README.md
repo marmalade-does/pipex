@@ -13,7 +13,7 @@ Next:
 * fix the line counts for all the functions
 * I think the memory allocations are correct, but make a chatGPT tester 
 * Make sure to remove the specific ft_fail()s in the int main() when you done.
-
+* remove all the checkpoints
 
 Things to ask people as 42 before handing in: 
 * the buffer size in the pipex_rd_nxt_lne()
