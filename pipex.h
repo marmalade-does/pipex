@@ -15,7 +15,7 @@
 // pipex.c
 void children(char *arg, char **envp);
 void wrapped_execve(char *arg, char **envp);
-void ft_here_we_are(char *delimeter);
+int	ft_here_we_are(char *delimeter);
 int pipex_rd_nxt_line(char **line);
 
 // pipex_utils.c

@@ -10,164 +10,93 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-// change the name of the ft_child and the ft_execute function
-// to whatever the other person didn't have on github
-
 #include "./pipex.h"
+
+
+
+
+
+void	handle_here_doc(int argc, char **argv, int *i, int *outfile)
+{
+	if (argc < 6)
+		ft_fail("Usage: ./pipex here_doc LIMITER cmd1 cmd2 ... cmdn file2", 7);
+	*i = 3;
+	*outfile = open(argv[argc - 1], O_WRONLY | O_APPEND | O_CREAT, 0644);
+	if (*outfile <= 0)
+		ft_fail("Error opening file - main", 8);
+	ft_here_we_are(argv[2]);
+}
+
+void	handle_regular_mode(int argc, char **argv, int *i, int *outfile)
+{
+	int	infile;
+
+	*i = 2;
+	infile = open(argv[1], O_RDONLY);
+	if (infile < 0)
+		ft_fail("Error opening input file\n", 9);
+	*outfile = open(argv[argc - 1], O_WRONLY | O_TRUNC | O_CREAT, 0644);
+	if (*outfile < 0)
+		ft_fail("Error opening output file\n", 10);
+	if (dup2(infile, STDIN_FILENO) < 0)
+		ft_fail("Error redirecting input - main\n", 11);
+}
 
 int	main(int argc, char *argv[], char **envp)
 {
-	int	infile;
 	int	outfile;
 	int	i;
 
-	int checkpoint;
-	checkpoint = open("checkpoint.txt", O_WRONLY | O_CREAT,  0644);
-	write(checkpoint, "checkpoint 0\n", 13);
 	if (argc < 5)
-		ft_fail("Usage, \
-			need at least two commands: ./pipex file1 cmd1 cmd2 ... cmdn file2",
-				6);
-	write(checkpoint, "checkpoint 1\n", 13);
+		ft_fail("Usage, need at least two commands: ./pipex file1 cmd1 cmd2 ... cmdn file2", 6);	
 	if (!(ft_strncmp(argv[1], "here_doc", 8)))
-	{
-		// ft_fail("entered the here_doc mode", 87); -- this needs to be removed later -- was used for testing
-		if (argc < 6)
-			ft_fail("Usage: ./pipex here_doc LIMITER cmd1 cmd2 ... cmdn file2",
-				7);
-		i = 3;
-		outfile = open(argv[argc - 1], O_WRONLY | O_APPEND | O_CREAT, 0644);
-		if (outfile <= 0)
-			ft_fail("Error opening file - main", 8);
-		ft_here_we_are(argv[2]); // pass the delimiter
-	}
+		handle_here_doc(argc, argv, &i, &outfile);
 	else
 	{
-		write(checkpoint, "checkpoint 2\n", 13);
-		i = 2;
-		infile = open(argv[1], O_RDONLY);
-		if (infile < 0)
-			ft_fail("Error opening input file\n", 9);
-		outfile = open(argv[argc - 1], O_WRONLY | O_TRUNC | O_CREAT, 0644);
-		if (outfile < 0)
-			ft_fail("Error opening output file\n", 10);
-		//if (infile <= 0 || outfile <= 0)
-		//	ft_fail("Error opening file - main\n", 9); // comment out the specific ft_fails when you done.
-		if (dup2(infile, STDIN_FILENO) < 0)
-			ft_fail("Error redirecting input - main\n", 11);
+		handle_regular_mode(argc, argv, &i, &outfile);
 	}
-	write(checkpoint, "checkpoint 3\n", 13);
 	while (i < argc - 2)
-	{ // yes because we want too NOT execute the last function
+	{
 		children(argv[i], envp);
 		i++;
 	}
-	if ((dup2(outfile, STDOUT_FILENO)) < 0)
+	if (dup2(outfile, STDOUT_FILENO) < 0)
 		ft_fail("Error redirecting output", 11);
 	wrapped_execve(argv[i], envp);
-	ft_fail("Error executing command", 12); // use of dup2() here is correct
+	ft_fail("Error executing command", 12);
 }
+
+
 void	children(char *arg, char **envp)
 {
 	int		pip[2];
 	pid_t	pid;
 
-	//write(2, "checkpoint 4\n", 13);
 	if (pipe(pip) == -1)
 		ft_fail("Error creating pipe", 13);
 	pid = fork();
-	//write(2, "checkpoint 4 - double\n", 22);
 	if (pid == -1)
 		ft_fail("Error creating fork", 14);
 	if (pid == 0)
 	{
-		//write(2, "checkpoint c-6\n", 15);
 		close(pip[0]);
-		//write(2, "checkpoint c-7\n", 15);
-		dup2(pip[1], STDOUT_FILENO); // this line causes a segfault (core dumped)
-		//write(2, "checkpoint c-8\n", 15);
+		dup2(pip[1], STDOUT_FILENO);
 		wrapped_execve(arg, envp);
-		//write(2, "checkpoint c-9\n", 15);
 		ft_fail("execve failed -- CHILDREN", 17);
-		//write(2, "checkpoint c-10\n", 15);
 	}
 	else
 	{
-		//write(2, "checkpoint p-6\n", 15);		
 		close(pip[1]);
-		//write(2, "checkpoint p-7\n", 15);
-		// close(STDOUT_FILENO);
-		//write(2, "checkpoint p-8\n", 15);
-		// this closes the unused fd to avoid too many fd's
 		dup2(pip[0], STDIN_FILENO);
-		//write(2, "checkpoint p-9\n", 15);
 		wait(NULL);
-		//write(2, "checkpoint p-10\n", 16);
-		// no free needed here since the child process is the one that alocates the strs
 	}
 }
-
-void test_execve_args_simple(char *path, char **argv, char **envp)
-{
-    int i;
-    
-    // Test path
-    write(2, "Path: ", 6);
-    if (path == NULL)
-        write(2, "NULL!\n", 6);
-    else {
-        write(2, path, ft_strlen(path));
-        write(2, "\n", 1);
-    }
-    
-    // Test argv
-    write(2, "Argv: ", 6);
-    if (argv == NULL)
-        write(2, "NULL!\n", 6);
-    else {
-        i = 0;
-        while (argv[i] != NULL) {
-            write(2, "[", 1);
-			write(2, argv[i], ft_strlen(argv[i]));
-            write(2, "] ", 2);
-            i++;
-        }
-        write(2, "NULL\n", 5);
-    }
-    
-    // Test envp
-    write(2, "Envp: ", 6);
-    if (envp == NULL)
-        write(2, "NULL!\n", 6);
-    else if (envp[0] == NULL)
-        write(2, "Empty\n", 6);
-    else
-        write(2, "OK\n", 3);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void	wrapped_execve(char *arg, char **envp)
 {
 	char	**splited;
 	char	*path;
 
 	splited = ft_split(arg, ' '); 
-	//write(2, "checkpoint 5\n", 13);
 	if (splited == NULL)
 	{
 		//write(2, "checkpoint - entered splitted", 29); // remove
@@ -181,42 +110,13 @@ void	wrapped_execve(char *arg, char **envp)
 		free_dbl_ptrs(splited, NULL, NULL);
 		ft_fail("get_path failed - wrapped execve", 17);
 	}
-	// write(2, "again >:)\n", 10);
-	sleep(2);
-	test_execve_args_simple(path, splited, envp);
-	write(2, "early return\n", 13);
 	execve(path, splited, envp);
-
-	////////////////////////////////////////////////////////////////////////////////////////
-	// If we get here, execve failed - check errno
-    if (errno == ENOENT)
-        write(2, "execve failed: No such file or directory\n", 41);
-    else if (errno == EACCES)
-        write(2, "execve failed: Permission denied\n", 33);
-    else if (errno == ENOEXEC)
-        write(2, "execve failed: Exec format error\n", 33);
-    else
-    {
-        write(2, "execve failed with errno: ", 26);
-        ft_putnbr_fd(errno, 2);
-        write(2, "\n", 1);
-    }
-    
-    // Also use perror for more detail
-    perror("execve");
-	// remove the above later //////////////////////////////////////////////////////////////
-
-
-
-	free_dbl_ptrs(splited, NULL, NULL); // - so the splitted is bad? 
-	free(path); // need to remove this later
-	ft_fail("execve failed", 18);
+	free_dbl_ptrs(splited, NULL);
+	free(path);
+	ft_fail("execve failed for some reason", errno);
 }
 
-
-
-
-void	ft_here_we_are(char *delimeter)
+int	ft_here_we_are(char *delimeter)
 {
 	int		pip[2];
 	pid_t	pid;
@@ -230,20 +130,22 @@ void	ft_here_we_are(char *delimeter)
 	{
 		close(pip[0]);
 		while (pipex_rd_nxt_line(&line))
-		// don't need to worry if returns NULL becuase is dealt with in called function
 		{
-			if (ft_strncmp(line, delimeter, ft_strlen(delimeter)) == 0)
-				break ; // og uses(EXIT_SUCCESS)->this also works but JIC
+			if (ft_strncmp(line, delimeter, ft_strlen(delimeter)) == 0 && 
+				line[ft_strlen(delimeter)] == '\0')
+			{
+				free(line);
+				break;
+			}
 			write(pip[1], line, ft_strlen(line));
+			write(pip[1], "\n", 1);  // Add back the newline for the pipe
 			free(line);
 		}
+		return (close(pip[1]), exit(0), 0);  // Important: child should exit -- whhy?
 	}
 	else
-	{
-		close(pip[1]);
-		wait(NULL); // other person used waitpid
-		dup2(pip[0], STDIN_FILENO);
-	}
+		return (close(pip[1]), wait(NULL), dup2(pip[0], STDIN_FILENO), close(pip[0]), 0);
+	// why ??? 
 }
 
 int	pipex_rd_nxt_line(char **line)
@@ -259,18 +161,18 @@ int	pipex_rd_nxt_line(char **line)
 	red = 1;
 	c = 0;
 	i = 0; // bruh tantas lineas :(
-	while (red > 0 && c != '\n')
+	while(red > 0 && c != '\n')
 	{
 		red = read(0, &c, 1);
-		if (c != '\n')
+		if (red > 0 && c != '\n')
+		{
 			buf[i] = c;
-		i++;
+			i++;
+		}
 	}
 	if (red == -1)
 		return (free(buf), ft_fail("read failed - pipex_rd_nxt_line", 22), -1);
-	// this might give erorrs later
-	buf[i - 1] = '\n';
-	buf[i] = '\0';
+	buf[i] = '\0';  // Simple null termination
 	*line = buf;
 	return (red);
 }

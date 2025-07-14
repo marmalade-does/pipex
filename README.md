@@ -2,18 +2,15 @@
 pipex project for 42
 
 next to do:
-* fully iron out the get_path series of functions ✓ - correct but need to fix line
-	* especially make sure that all the memory is freed and that the functions < 25 line
-* once this is done move up and finish the wrapper_execve <-- this is finished
-* then finish making children <-- this is finished
-* look again at how the here_we_are function works <-- ✓ this works in theory
+* fix the hre_doc functionality -- doens't work atm - not sure why
 * then get a pipex tester online and profit
 
 Next:
 * fix the line counts for all the functions
 * I think the memory allocations are correct, but make a chatGPT tester 
 * Make sure to remove the specific ft_fail()s in the int main() when you done.
-* remove all the checkpoints
+* remove all the write(checkpoints)
+* remove the -fsanatize flag in the makefile
 
 Things to ask people as 42 before handing in: 
 * the buffer size in the pipex_rd_nxt_lne()
@@ -21,6 +18,52 @@ Things to ask people as 42 before handing in:
 * Makefile good ? (both the root/tpipex  Makefile and the includes/libft makefile)
 * think about integrating the gnl function in your libft --> (just so that you can move the librairy w/ everything in the future)
 
+
+
+
+
+int	main(int argc, char *argv[], char **envp)
+{
+	int	infile;
+	int	outfile;
+	int	i;
+
+	if (argc < 5)
+		ft_fail("Usage, \
+			need at least two commands: ./pipex file1 cmd1 cmd2 ... cmdn file2",
+				6);
+	if (!(ft_strncmp(argv[1], "here_doc", 8)))
+	{
+		if (argc < 6)
+			ft_fail("Usage: ./pipex here_doc LIMITER cmd1 cmd2 ... cmdn file2",
+				7);
+		i = 3;
+		outfile = open(argv[argc - 1], O_WRONLY | O_APPEND | O_CREAT, 0644);
+		if (outfile <= 0)
+			ft_fail("Error opening file - main", 8);
+		ft_here_we_are(argv[2]);
+	}
+	else
+	{
+		i = 2;
+		infile = open(argv[1], O_RDONLY);
+		if (infile < 0)			ft_fail("Error opening input file\n", 9);
+		outfile = open(argv[argc - 1], O_WRONLY | O_TRUNC | O_CREAT, 0644);
+		if (outfile < 0)
+			ft_fail("Error opening output file\n", 10);
+		if (dup2(infile, STDIN_FILENO) < 0)
+			ft_fail("Error redirecting input - main\n", 11);
+	}
+	while (i < argc - 2)
+	{
+		children(argv[i], envp);
+		i++;
+	}
+	if ((dup2(outfile, STDOUT_FILENO)) < 0)
+		ft_fail("Error redirecting output", 11);
+	wrapped_execve(argv[i], envp);
+	ft_fail("Error executing command", 12); // use of dup2() here is correct
+}
 
 
 
