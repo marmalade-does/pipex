@@ -2,7 +2,8 @@ NAME = pipex
 
 # Source files (root directory files only)
 SRC = pipex.c \
-      pipex_utils.c
+      pipex_here_utils.c \
+	  pipex_get_path.c \
 
 # Object files (in obj directory)
 OBJ_DIR = obj
@@ -31,7 +32,7 @@ $(NAME): $(LIBFT) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) -L$(LIBFT_DIR) -lft -o $(NAME)
 
 # Compile object files
-$(OBJ_DIR)/%.o: %.c pipex.h
+$(OBJ_DIR)/%.o: %.c pipex.h Makefile
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 # Clean object files
