@@ -6,13 +6,13 @@
 /*   By: lroberts <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/18 18:24:27 by lroberts          #+#    #+#             */
-/*   Updated: 2025/07/16 06:54:23 by lroberts         ###   ########.fr       */
+/*   Updated: 2025/07/15 18:56:22 by lroberts         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "./pipex.h"
 
-static void	handle_here_doc(int argsc, char **argv, int *i, int *outfile);
+static void	handle_here_doc(int argc, char **argv, int *i, int *outfile);
 static void	handle_regular_mode(int argc, char **argv, int *i, int *outfile);
 
 int	main(int argc, char *argv[], char **envp)
@@ -90,40 +90,31 @@ void	children(char *arg, char **envp)
 	}
 }
 
-
 void	wrapped_execve(char *arg, char **envp)
 {
 	char	**splited;
 	char	*path;
-	char 	*cmd_name;
+	size_t i;
 
 	splited = ft_split(arg, ' ');
 	if (splited == NULL)
 		ft_fail("ft_split failed - wrapped execve", 16);
-	cmd_name = ft_strrchr(splited[0], '/'); // needs to be strrchr so that we get the *last* '/'
-	if (cmd_name++)
-	{
-		if (access(splited[0], X_OK) == 0)
-		{
-			path = splited[0];
-			splited[0] = cmd_name;
-		}
-		else
-			ft_handle_error(splited, NULL, "input path not accesible - wrapped_execve", 55);
-	}
+	i = -1;
+	while(splited[0][++i] != '.' && i < 2)
+	if(splited[0][i] == '/')
+		execve(splited[0], splited, envp);
 	else
-	{
 		path = get_path(splited, envp);
-		if (path == NULL)
-			ft_handle_error(splited, NULL, "get_path failed - wrapped execve", 17);
+	if (path == NULL)
+	{
+		free_dbl_ptrs(splited, NULL, NULL);
+		ft_fail("get_path failed - wrapped execve", 17);
 	}
 	execve(path, splited, envp);
 	free_dbl_ptrs(splited, NULL);
-	if (path != splited[0])
-		free(path);
+	free(path);
 	ft_fail("execve failed for some reason", errno);
 }
-
 
 /*
 static void	ft_printing_splited(char **splited)

@@ -5,8 +5,6 @@ next to do
 * then get a pipex tester online and profit
 
 Next
-* need to do the tests again - do tests with both relative and absolute paths and command name.
-* try run the tests on your debian VM ? maybe that is the reason that the env variables aren't correct? 
 
 Things to ask people as 42 before handing in: 
 * the buffer size in the pipex_rd_nxt_lne()

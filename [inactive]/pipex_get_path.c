@@ -5,12 +5,12 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: lroberts <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/15 16:09:56 by lrobft_handleerts          #+#    #+#             */
-/*   Updated: 2025/07/16 06:48:50 by lroberts         ###   ########.fr       */
+/*   Created: 2025/07/15 16:09:56 by lroberts          #+#    #+#             */
+/*   Updated: 2025/07/16 06:48:14 by lroberts         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "./pipex.h"
+#include "pipex.h"
 
 void	ft_handle_error(char **splitted_cmd, char **paths, char *msg, int code)
 {
@@ -23,12 +23,14 @@ char	*get_path(char **splitted_cmd, char **envp)
 	size_t	i;
 	char	**paths;
 
+	
 	i = 0;
 	paths = NULL;
 	while (envp[i])
 	{
 		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
 		{
+			exit(errno);
 			paths = ft_split(envp[i] + 5, ':');
 			if (paths == NULL)
 				ft_handle_error(splitted_cmd, NULL, "ft_split fail-get_path", 1);
