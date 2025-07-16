@@ -6,7 +6,7 @@
 /*   By: lroberts <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/18 18:24:27 by lroberts          #+#    #+#             */
-/*   Updated: 2025/07/16 06:54:23 by lroberts         ###   ########.fr       */
+/*   Updated: 2025/07/16 16:45:52 by lroberts         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ int	main(int argc, char *argv[], char **envp)
 	int	outfile;
 	int	i;
 
-	if (argc < 5)
+	if (argc < 5 || envp == NULL)
 		ft_fail("Usage: ./pipex file1 cmd1 cmd2 ... cmdn file2", 6);
 	if (!(ft_strncmp(argv[1], "here_doc", 8)))
 		handle_here_doc(argc, argv, &i, &outfile);

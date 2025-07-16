@@ -37,9 +37,7 @@ char	*get_path(char **splitted_cmd, char **envp)
 		i++;
 	}
 	if (paths == NULL)
-	{
 		ft_handle_error(splitted_cmd, NULL, "PATH not in env - get_path", 2);
-	}
 	return (ft_test_paths(splitted_cmd, paths));
 }
 
